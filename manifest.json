@@ -1,0 +1,26 @@
+{
+  "name": "FreeTaxUSA Auto-Filler",
+  "description": "Automates data entry and PDF downloads on FreeTaxUSA 2022",
+  "version": "1.0",
+  "manifest_version": 3,
+  "action": {
+    "default_popup": "./popup/popup.html"
+  },
+  "background": {
+    "service_worker": "./background.js"
+  },
+  "host_permissions": ["https://www.freetaxusa.com/*"],
+  "permissions": ["tabs", "storage", "scripting", "activeTab", "downloads"],
+  "content_scripts": [
+    {
+      "js": ["./scripts/content.js"],
+      "matches": ["https://www.freetaxusa.com/*"]
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["./popup/xlsx.full.min.js"],
+      "matches": ["https://www.freetaxusa.com/*"]
+    }
+  ]
+}
