@@ -1,7 +1,7 @@
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     switch (message.action) {
         case "startFiling":
-            fillForms(message.data.people, message.data.company, message.data.jobs).then(() => {
+            fillForms(message.data.people).then(() => {
                 sendResponse({ status: 'Filling complete' });
             }).catch((error) => {
                 console.error('Error in fillForms:', error);
@@ -23,7 +23,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     }
 });
 
-async function fillForms(people, company, jobs) {
+async function fillForms(people) {
     const taxpayerLink = Array.from(document.querySelectorAll('#menu-in .btn-group.menu-item-200 .dropdown-menu a')).find(a => a.getAttribute('onclick')?.includes("submitTopNavForm('200'"));
     if (!taxpayerLink) {
         console.error('Taxpayer Information link not found');
@@ -53,7 +53,6 @@ async function fillForms(people, company, jobs) {
 
     document.querySelector('input[name="tp_f_name_e"]').value = people[1] || '';
     document.querySelector('input[name="tp_l_name_e"]').value = people[0] || '';
-    document.querySelector('input[name="tp_occ"]').value = jobs[Math.floor(Math.random() * jobs.length)] || '';
     document.querySelector('input[name="tp_ssn_e-SSN"]').value = people[9] || '';
     document.querySelector('input[name="address_e"]').value = people[4] || '';
     document.querySelector('input[name="apt_no"]').value = people[5].split(" ")[1] || '';
@@ -83,15 +82,15 @@ async function fillForms(people, company, jobs) {
         throw new Error('There is some issue in document');
     }
 
-    const wagesLink = Array.from(document.querySelectorAll('#menu-in .btn-group.menu-item-301400 .dropdown-menu a')).find(a => a.getAttribute('onclick')?.includes("submitTopNavForm('300'"));
-    if (!wagesLink) {
-        console.error('Wages (W-2) link not found');
-        throw new Error('Wages (W-2) link not found');
+    const businessIncomeLink = Array.from(document.querySelectorAll('#menu-in .btn-group.menu-item-301400 .dropdown-menu a')).find(a => a.getAttribute('onclick')?.includes("submitTopNavForm('200000'"));
+    if (!businessIncomeLink) {
+        console.error('Business Income link not found');
+        throw new Error('Business Income link not found');
     }
-    wagesLink.click();
+    businessIncomeLink.click();
     await new Promise(resolve => setTimeout(resolve, 2000));
 
-    const editLink = Array.from(document.querySelectorAll('div.record-card a')).find(a => {
+    const editLink = Array.from(document.querySelectorAll('div.edit-delete a')).find(a => {
         const span = a.querySelector('span');
         return span && span.textContent.trim() === 'Edit';
     });
@@ -100,27 +99,48 @@ async function fillForms(people, company, jobs) {
         await new Promise(resolve => setTimeout(resolve, 2000));
     }
 
-    document.querySelector('input[name="emp_id_e-EIN"]').value = company[0] || '';
-    document.querySelector('input[name="emp_name"]').value = company[1] || '';
-    document.querySelector('input[name="emp_address"]').value = company[2] || '';
-    document.querySelector('input[name="emp_city"]').value = company[3] || '';
-    document.querySelector('select[name="emp_state"]').value = company[4].trim() || '';
-    document.querySelector('input[name="emp_zip"]').value = company[5] || '';
-    document.querySelector('input[name="wages-CURRENCY"]').value = people[14] || '';
-    document.querySelector('input[name="fed_tax-CURRENCY"]').value = people[15] || '';
-    document.querySelector('input[name="ss_wages-CURRENCY"]').value = people[16] || '';
-    document.querySelector('input[name="ss_tax-CURRENCY"]').value = people[17] || '';
-    document.querySelector('input[name="mc_wages-CURRENCY"]').value = people[18] || '';
-    document.querySelector('input[name="mc_tax-CURRENCY"]').value = people[19] || '';
-    document.querySelector('select[name="state_name0"]').value = people[36].trim() || '';
-    document.querySelector('input[name="state_emp_id0"]').value = company[6] || '';
-    document.querySelector('input[name="state_wages0-CURRENCY"]').value = people[37] || '';
-    document.querySelector('input[name="state_tax0-CURRENCY"]').value = people[38] || '';
+    const sections = Array.from(document.querySelectorAll('.section'));
+
+    const overviewSection = sections.find(section => {
+        const titleSpan = section.querySelector('.summary-title .summary-table-title');
+        return titleSpan && titleSpan.textContent.trim() === 'Overview';
+    });
+
+    if (overviewSection) {
+        const overviewEditLink = overviewSection.querySelector('.summary-collapse a.btn.btn-sm.btn-primary span');
+        if (overviewEditLink && overviewEditLink.textContent.trim() === 'Edit') {
+            overviewEditLink.closest('a').click();
+            await new Promise(resolve => setTimeout(resolve, 2000));
+        } else {
+            console.error('Edit button not found in Overview section');
+        }
+    } else {
+        console.error('Overview section not found');
+    }
+
+    const min = 1500;
+    const max = 5000;
+
+    const services = [
+        "Book Keeping",
+        "Accounting Services",
+        "Contracting Services",
+        "Plumbing Services",
+        "Maintenance Services",
+        "Moving Services",
+        "Delivery Services",
+        "Construction Services",
+        "Handyman Services",
+        "Pet Grooming Services"
+    ];
+
+    const randomService = services[Math.floor(Math.random() * services.length)];
+    document.querySelector('input[name="bus_desc"]').value = randomService;
 
     await new Promise(resolve => setTimeout(resolve, 2000));
 
     const continueButtonOnIncome = Array.from(document.querySelectorAll('div.button-section a')).find(a => {
-        const span = a.querySelector('span.fsPageId-310');
+        const span = a.querySelector('span.fsPageId-200005');
         return span && span.textContent.trim().replace(/\s+/g, ' ') === 'Save and Continue';
     });
     if (!continueButtonOnIncome) {
@@ -130,9 +150,21 @@ async function fillForms(people, company, jobs) {
     continueButtonOnIncome.click();
     await new Promise(resolve => setTimeout(resolve, 2000));
 
+    const busCatSelect = document.getElementById('bus_category');
+    const busCatOptions = Array.from(busCatSelect.options).slice(1); // exclude the first option
+    const busCatOptionsRandomOption = busCatOptions[Math.floor(Math.random() * busCatOptions.length)];
+    busCatSelect.value = busCatOptionsRandomOption.value;
+
+    const busCodeSelect = document.getElementById('bus_code');
+    const busCodeOptions = Array.from(busCodeSelect.options).slice(1); // exclude the first option
+    const busCodeOptionsRandomOption = busCodeOptions[Math.floor(Math.random() * busCodeOptions.length)];
+    busCodeSelect.value = busCodeOptionsRandomOption.value;
+
+    await new Promise(resolve => setTimeout(resolve, 2000));
+
     const continueButtonOnDubleCheck = Array.from(document.querySelectorAll('div.button-section a')).find(a => {
-        const span = a.querySelector('span.fsPageId-318');
-        return span && span.textContent.trim().replace(/\s+/g, ' ') === 'Continue';
+        const span = a.querySelector('span.fsPageId-200006');
+        return span && span.textContent.trim().replace(/\s+/g, ' ') === 'Save and Continue';
     });
     if (!continueButtonOnDubleCheck) {
         console.error('Save and Continue button not found');
@@ -140,84 +172,93 @@ async function fillForms(people, company, jobs) {
     }
     continueButtonOnDubleCheck.click();
     await new Promise(resolve => setTimeout(resolve, 2000));
+
+    const sectionTitles = Array.from(document.querySelectorAll('.summary-title-section'));
+
+    const incomeSectionIndex = sectionTitles.findIndex(section => {
+        const titleSpan = section.querySelector('.summary-table-title');
+        return titleSpan && titleSpan.textContent.trim() === 'Income';
+    });
+
+    if (incomeSectionIndex !== -1) {
+        const collapses = document.querySelectorAll('.summary-collapse');
+        const incomeCollapse = collapses[incomeSectionIndex];
+        
+        const incomeEditLink = incomeCollapse.querySelector('a.btn.btn-sm.btn-primary span');
+        if (incomeEditLink && incomeEditLink.textContent.trim() === 'Edit') {
+            incomeEditLink.closest('a').click();
+            await new Promise(resolve => setTimeout(resolve, 2000));
+        } else {
+            console.error('Edit button not found in Income section');
+        }
+    } else {
+        console.error('Income section not found');
+    }
+
+    document.getElementById('is_1099_misc_received-2').checked = true;
+    await new Promise(resolve => setTimeout(resolve, 2000));
+
+    const continueButtonOnSecondEdit = Array.from(document.querySelectorAll('div.button-section a')).find(a => {
+        const span = a.querySelector('span.fsPageId-200037');
+        return span && span.textContent.trim().replace(/\s+/g, ' ') === 'Save and Continue';
+    });
+    if (!continueButtonOnSecondEdit) {
+        console.error('Save and Continue button not found');
+        throw new Error('Save and Continue button not found');
+    }
+    continueButtonOnSecondEdit.click();
+    await new Promise(resolve => setTimeout(resolve, 2000));
+
+    document.querySelector('input[name="other_receipts_non_1099k-CURRENCY"]').value = Math.floor(Math.random() * (max - min + 1)) + 1500;
+    await new Promise(resolve => setTimeout(resolve, 2000));
+
+    const continueButtonOnSecondEditDouble = Array.from(document.querySelectorAll('div.button-section a')).find(a => {
+        const span = a.querySelector('span.fsPageId-200040');
+        return span && span.textContent.trim().replace(/\s+/g, ' ') === 'Save and Continue';
+    });
+    if (!continueButtonOnSecondEditDouble) {
+        console.error('Save and Continue button not found');
+        throw new Error('Save and Continue button not found');
+    }
+    continueButtonOnSecondEditDouble.click();
+    await new Promise(resolve => setTimeout(resolve, 2000));
+
+    const continueButtonOnSecondEditFinal = Array.from(document.querySelectorAll('div.button-section a')).find(a => {
+        const span = a.querySelector('span.fsPageId-200004');
+        return span && span.textContent.trim().replace(/\s+/g, ' ') === 'Continue';
+    });
+    if (!continueButtonOnSecondEditFinal) {
+        console.error('Continue button not found');
+        throw new Error('Continue button not found');
+    }
+    continueButtonOnSecondEditFinal.click();
+    await new Promise(resolve => setTimeout(resolve, 2000));
 }
 
 async function downloadFiles(filename) {
-    const titleDiv = Array.from(document.querySelectorAll('.right-box .title')).find(
-        title => title.textContent.trim().startsWith('DC')
+    // Click "Review Tax Return" button
+    const reviewTaxReturnLink = Array.from(document.querySelectorAll('.dropdown-menu a')).find(
+        a => a.textContent.includes('Review Tax Return') && a.getAttribute('onclick')?.includes("submitTopNavForm('950'")
     );
-
-    let titleText;
-    
-    if (!!titleDiv) titleText = titleDiv.textContent.trim();
-
-    if (titleText && titleText.includes('DC')) {
-        // Click "Review Tax Return" button
-        const reviewTaxReturnLink = Array.from(document.querySelectorAll('.dropdown-menu a')).find(
-            a => a.textContent.includes('Review Tax Return') && a.getAttribute('onclick')?.includes("submitTopNavForm('950'")
-        );
-        if (!reviewTaxReturnLink) {
-            console.error('Review Tax Return link not found');
-            throw new Error('Review Tax Return link not found');
-        }
-        reviewTaxReturnLink.click();
-        await new Promise(resolve => setTimeout(resolve, 2000));
-
-        // Click "Continue" button
-        const continueButton = Array.from(document.querySelectorAll('.button-section a')).find(
-            a => {
-                const span = a.querySelector('span.fsPageId-950');
-                return span && span.textContent.trim() === 'Continue';
-            }
-        );
-        if (!continueButton) {
-            console.error('Continue button not found');
-            throw new Error('Continue button not found');
-        }
-        continueButton.click();
-        await new Promise(resolve => setTimeout(resolve, 2000));
+    if (!reviewTaxReturnLink) {
+        console.error('Review Tax Return link not found');
+        throw new Error('Review Tax Return link not found');
     }
-    if (!titleText) {
-        const filingMethodLink = Array.from(document.querySelectorAll('#menu-in .btn-group.menu-item-905 .dropdown-menu a')).find(a => a.textContent.includes('Filing Method'));
-        if (!filingMethodLink) {
-            console.error('Filing Method link not found');
-            throw new Error('Filing Method link not found');
-        }
-        filingMethodLink.click();
-        await new Promise(resolve => setTimeout(resolve, 2000));
-    }
-
-    const continueButtonOnFiliongMethodOne = Array.from(document.querySelectorAll('div.button-section a')).find(a => {
-        const span = a.querySelector('span.fsPageId-951');
-        return span && span.textContent.trim().replace(/\s+/g, ' ') === 'Save and Continue';
-    });
-    if (!continueButtonOnFiliongMethodOne) {
-        console.error('Save and Continue button not found');
-        throw new Error('Save and Continue button not found');
-    }
-    continueButtonOnFiliongMethodOne.click();
+    reviewTaxReturnLink.click();
     await new Promise(resolve => setTimeout(resolve, 2000));
 
-    const continueButtonOnFiliongMethodTwo = Array.from(document.querySelectorAll('div.button-section a')).find(a => {
-        const span = a.querySelector('span.fsPageId-959');
-        return span && span.textContent.trim().replace(/\s+/g, ' ') === 'Save and Continue';
-    });
-    if (!continueButtonOnFiliongMethodTwo) {
-        console.error('Save and Continue button not found');
-        throw new Error('Save and Continue button not found');
+    // Click "Continue" button
+    const continueButton = Array.from(document.querySelectorAll('.button-section a')).find(
+        a => {
+            const span = a.querySelector('span.fsPageId-950');
+            return span && span.textContent.trim() === 'Continue';
+        }
+    );
+    if (!continueButton) {
+        console.error('Continue button not found');
+        throw new Error('Continue button not found');
     }
-    continueButtonOnFiliongMethodTwo.click();
-    await new Promise(resolve => setTimeout(resolve, 2000));
-
-    const checkbox = document.querySelector('input[name="is_file_return_check"]');
-    if (!checkbox) {
-        console.error('Checkbox not found');
-        throw new Error('Checkbox not found');
-    }
-    checkbox.checked = true;
-    if (checkbox.onclick) {
-        checkbox.onclick.call(checkbox);
-    }
+    continueButton.click();
     await new Promise(resolve => setTimeout(resolve, 2000));
 
     const FinishButtonOnFiliongMethod = Array.from(document.querySelectorAll('div.button-section a')).find(a => {

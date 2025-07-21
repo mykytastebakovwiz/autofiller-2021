@@ -1,10 +1,6 @@
 let peopleData = [];
-let companyData = [];
-let jobsData = [];
 let usedPeople = [];
 let peopleFilename = '';
-let companyFilename = '';
-let jobsFilename = '';
 
 // Button & status states stored to keep UI consistent across popup toggles
 let startFillingEnabled = true;
@@ -37,48 +33,16 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       });
       return true;
 
-    case "uploadCompanyFile":
-      companyData = message.data;
-      companyFilename = message.filename || '';
-      statusMessage = 'Company file loaded';
-
-      chrome.storage.local.set({
-        companyData,
-        companyFilename,
-        statusMessage
-      }, () => {
-        sendResponse({ status: statusMessage });
-      });
-      return true;
-
-    case "uploadJobsFile":
-      jobsData = message.data;
-      jobsFilename = message.filename || '';
-      statusMessage = 'Jobs file loaded';
-
-      chrome.storage.local.set({
-        jobsData,
-        jobsFilename,
-        statusMessage
-      }, () => {
-        sendResponse({ status: statusMessage });
-      });
-      return true;
-
     case "getFileStates":
       chrome.storage.local.get([
-        'peopleData', 'companyData', 'jobsData', 'usedPeople',
-        'peopleFilename', 'companyFilename', 'jobsFilename',
+        'peopleData', 'usedPeople',
+        'peopleFilename',
         'startFillingEnabled', 'downloadFilesEnabled', 'downloadDataFilesEnabled',
         'statusMessage'
       ], (result) => {
         peopleData = result.peopleData || [];
-        companyData = result.companyData || [];
-        jobsData = result.jobsData || [];
         usedPeople = result.usedPeople || [];
         peopleFilename = result.peopleFilename || '';
-        companyFilename = result.companyFilename || '';
-        jobsFilename = result.jobsFilename || '';
         startFillingEnabled = typeof result.startFillingEnabled === 'boolean' ? result.startFillingEnabled : true;
         downloadFilesEnabled = typeof result.downloadFilesEnabled === 'boolean' ? result.downloadFilesEnabled : true;
         downloadDataFilesEnabled = typeof result.downloadDataFilesEnabled === 'boolean' ? result.downloadDataFilesEnabled : (usedPeople.length > 0);
@@ -86,8 +50,6 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
         sendResponse({
           peopleFilename,
-          companyFilename,
-          jobsFilename,
           usedPeople,
           startFillingEnabled,
           downloadFilesEnabled,
@@ -98,7 +60,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       return true;
 
     case "startFiling":
-      if (peopleData.length === 0 || companyData.length === 0 || jobsData.length === 0) {
+      if (peopleData.length === 0) {
         sendResponse({ status: 'Please upload all required files' });
         return;
       }
@@ -241,18 +203,14 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 });
 
 chrome.storage.local.get([
-  'peopleData', 'companyData', 'jobsData', 'usedPeople',
-  'peopleFilename', 'companyFilename', 'jobsFilename',
+  'peopleData', 'usedPeople',
+  'peopleFilename',
   'startFillingEnabled', 'downloadFilesEnabled', 'downloadDataFilesEnabled',
   'statusMessage'
 ], (result) => {
   peopleData = result.peopleData || [];
-  companyData = result.companyData || [];
-  jobsData = result.jobsData || [];
   usedPeople = result.usedPeople || [];
   peopleFilename = result.peopleFilename || '';
-  companyFilename = result.companyFilename || '';
-  jobsFilename = result.jobsFilename || '';
   startFillingEnabled = typeof result.startFillingEnabled === 'boolean' ? result.startFillingEnabled : true;
   downloadFilesEnabled = typeof result.downloadFilesEnabled === 'boolean' ? result.downloadFilesEnabled : true;
   downloadDataFilesEnabled = typeof result.downloadDataFilesEnabled === 'boolean' ? result.downloadDataFilesEnabled : (usedPeople.length > 0);

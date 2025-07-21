@@ -1,18 +1,12 @@
 document.addEventListener('DOMContentLoaded', () => {
     const peopleFileInput = document.getElementById('peopleFile');
-    const companyFileInput = document.getElementById('companyFile');
-    const jobsFileInput = document.getElementById('jobsFile');
     const startFillingButton = document.getElementById('startFilling');
     const downloadFilesButton = document.getElementById('downloadFiles');
     const downloadDataFilesButton = document.getElementById('downloadDataFiles');
     const statusDiv = document.getElementById('status');
     const peopleStatus = document.createElement('span');
-    const companyStatus = document.createElement('span');
-    const jobsStatus = document.createElement('span');
   
     peopleFileInput.parentNode.appendChild(peopleStatus);
-    companyFileInput.parentNode.appendChild(companyStatus);
-    jobsFileInput.parentNode.appendChild(jobsStatus);
   
     function updateStatus(message) {
       statusDiv.textContent = message;
@@ -40,7 +34,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   
     function updateFileStatus(type, filename) {
-      const statusElement = { people: peopleStatus, company: companyStatus, jobs: jobsStatus }[type];
+      const statusElement = { people: peopleStatus }[type];
       statusElement.textContent = filename ? ` (${filename})` : '';
       statusElement.style.color = filename ? 'green' : 'red';
     }
@@ -70,8 +64,6 @@ document.addEventListener('DOMContentLoaded', () => {
     // Restore UI state from storage when popup opens
     chrome.runtime.sendMessage({ action: "getFileStates" }, (response) => {
       updateFileStatus('people', response.peopleFilename);
-      updateFileStatus('company', response.companyFilename);
-      updateFileStatus('jobs', response.jobsFilename);
       updateDownloadDataButtonState(response.usedPeople);
   
       chrome.storage.local.get(
@@ -99,36 +91,6 @@ document.addEventListener('DOMContentLoaded', () => {
           updateDownloadDataButtonState([]);
           // Reset buttons to enabled after upload
           updateStartDownloadButtonsState(true);
-        });
-      });
-    });
-  
-    companyFileInput.addEventListener('change', (e) => {
-      const file = e.target.files[0];
-      readFile(file, (data) => {
-        const filteredData = data.filter(item => item[0] !== "" && item[0] !== "Id" && !!item.length);
-        chrome.runtime.sendMessage({
-          action: "uploadCompanyFile",
-          data: filteredData,
-          filename: file.name
-        }, (response) => {
-          updateStatus(response.status);
-          updateFileStatus('company', file.name);
-        });
-      });
-    });
-  
-    jobsFileInput.addEventListener('change', (e) => {
-      const file = e.target.files[0];
-      readFile(file, (data) => {
-        const filteredData = data.filter(item => item[0] !== "");
-        chrome.runtime.sendMessage({
-          action: "uploadJobsFile",
-          data: filteredData,
-          filename: file.name
-        }, (response) => {
-          updateStatus(response.status);
-          updateFileStatus('jobs', file.name);
         });
       });
     });
