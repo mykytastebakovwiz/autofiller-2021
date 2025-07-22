@@ -1,6 +1,6 @@
 {
-  "name": "FreeTaxUSA Auto-Filler",
-  "description": "Automates data entry and PDF downloads on FreeTaxUSA 2022",
+  "name": "FreeTaxUSA 2021 Auto-Filler",
+  "description": "Automates data entry and PDF downloads on FreeTaxUSA 2021",
   "version": "1.0",
   "manifest_version": 3,
   "action": {
