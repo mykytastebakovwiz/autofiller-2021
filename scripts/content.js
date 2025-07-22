@@ -7,7 +7,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
                 console.error('Error in fillForms:', error);
                 sendResponse({ status: error.message });
             });
-            return true; // Async response
+            return true;
 
         case "downloadFiles":
             downloadFiles(message.filename).then((res) => {
