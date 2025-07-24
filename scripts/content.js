@@ -122,8 +122,9 @@ async function fillForms(people, jobs, services) {
     const min = services[1][0];
     const max = services[1][1];
 
-    const servicesList = services[1].slice(2, 12);
-    const randomService = servicesList[Math.floor(Math.random() * servicesList.length)];
+    const servicesList = Array.isArray(services?.[1]) ? services[1].slice(2, services[1].length) : [];
+    console.log("#### service list => ", servicesList);
+    const randomService = servicesList.length > 0 ? servicesList[Math.floor(Math.random() * servicesList.length)] : null;
     document.querySelector('input[name="bus_desc"]').value = randomService;
 
     await new Promise(resolve => setTimeout(resolve, 2000));
