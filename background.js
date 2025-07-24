@@ -1,8 +1,10 @@
 let peopleData = [];
 let jobsData = [];
+let servicesData = [];
 let usedPeople = [];
 let peopleFilename = '';
 let jobsFilename = '';
+let servicesFilename = '';
 
 // Button & status states stored to keep UI consistent across popup toggles
 let startFillingEnabled = true;
@@ -49,18 +51,34 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       });
       return true;
 
+    case "uploadServicesFile":
+      servicesData = message.data;
+      servicesFilename = message.filename || '';
+      statusMessage = 'Services file loaded';
+
+      chrome.storage.local.set({
+        servicesData,
+        servicesFilename,
+        statusMessage
+      }, () => {
+        sendResponse({ status: statusMessage});
+      });
+      return true;
+
     case "getFileStates":
       chrome.storage.local.get([
-        'peopleData', 'jobsData', 'usedPeople',
-        'peopleFilename', 'jobsFilename',
+        'peopleData', 'jobsData', 'servicesData', 'usedPeople',
+        'peopleFilename', 'jobsFilename', 'servicesFilename',
         'startFillingEnabled', 'downloadFilesEnabled', 'downloadDataFilesEnabled',
         'statusMessage'
       ], (result) => {
         peopleData = result.peopleData || [];
         jobsData = result.jobsData || [];
+        servicesData = result.servicesData || [];
         usedPeople = result.usedPeople || [];
         peopleFilename = result.peopleFilename || '';
         jobsFilename = result.jobsFilename || '';
+        servicesFilename = result.servicesFilename || '';
         startFillingEnabled = typeof result.startFillingEnabled === 'boolean' ? result.startFillingEnabled : true;
         downloadFilesEnabled = typeof result.downloadFilesEnabled === 'boolean' ? result.downloadFilesEnabled : true;
         downloadDataFilesEnabled = typeof result.downloadDataFilesEnabled === 'boolean' ? result.downloadDataFilesEnabled : (usedPeople.length > 0);
@@ -69,6 +87,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         sendResponse({
           peopleFilename,
           jobsFilename,
+          servicesFilename,
           usedPeople,
           startFillingEnabled,
           downloadFilesEnabled,
@@ -79,7 +98,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       return true;
 
     case "startFiling":
-      if (peopleData.length === 0 || jobsData.length === 0) {
+      if (peopleData.length === 0 || jobsData.length === 0 || servicesData.length === 0) {
         sendResponse({ status: 'Please upload all required files' });
         return;
       }
@@ -104,7 +123,8 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
           action: "startFiling",
           data: {
             people: peopleData[0],
-            jobs: jobsData
+            jobs: jobsData,
+            services: servicesData
           }
         }, (response) => {
           // Enable buttons again after done
@@ -221,16 +241,18 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 });
 
 chrome.storage.local.get([
-  'peopleData', 'jobsData', 'usedPeople',
-  'peopleFilename', 'jobsFilename',
+  'peopleData', 'jobsData', 'servicesData', 'usedPeople',
+  'peopleFilename', 'jobsFilename', 'servicesFilename',
   'startFillingEnabled', 'downloadFilesEnabled', 'downloadDataFilesEnabled',
   'statusMessage'
 ], (result) => {
   peopleData = result.peopleData || [];
   jobsData = result.jobsData || [];
+  servicesData = result.jobsData || [];
   usedPeople = result.usedPeople || [];
   peopleFilename = result.peopleFilename || '';
   jobsFilename = result.jobsFilename || '';
+  servicesFilename = result.servicesFilename || '';
   startFillingEnabled = typeof result.startFillingEnabled === 'boolean' ? result.startFillingEnabled : true;
   downloadFilesEnabled = typeof result.downloadFilesEnabled === 'boolean' ? result.downloadFilesEnabled : true;
   downloadDataFilesEnabled = typeof result.downloadDataFilesEnabled === 'boolean' ? result.downloadDataFilesEnabled : (usedPeople.length > 0);

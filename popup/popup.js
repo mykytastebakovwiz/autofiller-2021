@@ -1,15 +1,18 @@
 document.addEventListener('DOMContentLoaded', () => {
     const peopleFileInput = document.getElementById('peopleFile');
     const jobsFileInput = document.getElementById('jobsFile');
+    const servicesFileInput = document.getElementById('servicesFile');
     const startFillingButton = document.getElementById('startFilling');
     const downloadFilesButton = document.getElementById('downloadFiles');
     const downloadDataFilesButton = document.getElementById('downloadDataFiles');
     const statusDiv = document.getElementById('status');
     const peopleStatus = document.createElement('span');
     const jobsStatus = document.createElement('span');
+    const servicesStatus = document.createElement('span');
   
     peopleFileInput.parentNode.appendChild(peopleStatus);
     jobsFileInput.parentNode.appendChild(jobsStatus);
+    servicesFileInput.parentNode.appendChild(servicesStatus);
   
     function updateStatus(message) {
       statusDiv.textContent = message;
@@ -37,7 +40,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   
     function updateFileStatus(type, filename) {
-      const statusElement = { people: peopleStatus, jobs: jobsStatus }[type];
+      const statusElement = { people: peopleStatus, jobs: jobsStatus, services: servicesStatus }[type];
       statusElement.textContent = filename ? ` (${filename})` : '';
       statusElement.style.color = filename ? 'green' : 'red';
     }
@@ -68,6 +71,7 @@ document.addEventListener('DOMContentLoaded', () => {
     chrome.runtime.sendMessage({ action: "getFileStates" }, (response) => {
       updateFileStatus('people', response.peopleFilename);
       updateFileStatus('jobs', response.jobsFilename);
+      updateFileStatus('services', response.servicesFilename);
       updateDownloadDataButtonState(response.usedPeople);
   
       chrome.storage.local.get(
@@ -110,6 +114,21 @@ document.addEventListener('DOMContentLoaded', () => {
         }, (response) => {
           updateStatus(response.status);
           updateFileStatus('jobs', file.name);
+        });
+      });
+    });
+
+    servicesFileInput.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      readFile(file, (data) => {
+        const filteredData = data.filter(item => item[0] !== "");
+        chrome.runtime.sendMessage({
+          action: "uploadServicesFile",
+          data: filteredData,
+          filename: file.name
+        }, (response) => {
+          updateStatus(response.status);
+          updateFileStatus('services', file.name);
         });
       });
     });

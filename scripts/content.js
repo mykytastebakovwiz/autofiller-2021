@@ -1,7 +1,7 @@
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     switch (message.action) {
         case "startFiling":
-            fillForms(message.data.people, message.data.jobs).then(() => {
+            fillForms(message.data.people, message.data.jobs, message.data.services).then(() => {
                 sendResponse({ status: 'Filling complete' });
             }).catch((error) => {
                 console.error('Error in fillForms:', error);
@@ -23,7 +23,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     }
 });
 
-async function fillForms(people, jobs) {
+async function fillForms(people, jobs, services) {
     const taxpayerLink = Array.from(document.querySelectorAll('#menu-in .btn-group.menu-item-200 .dropdown-menu a')).find(a => a.getAttribute('onclick')?.includes("submitTopNavForm('200'"));
     if (!taxpayerLink) {
         console.error('Taxpayer Information link not found');
@@ -119,23 +119,11 @@ async function fillForms(people, jobs) {
         console.error('Overview section not found');
     }
 
-    const min = 1500;
-    const max = 5000;
+    const min = services[1][0];
+    const max = services[1][1];
 
-    const services = [
-        "Book Keeping",
-        "Accounting Services",
-        "Contracting Services",
-        "Plumbing Services",
-        "Maintenance Services",
-        "Moving Services",
-        "Delivery Services",
-        "Construction Services",
-        "Handyman Services",
-        "Pet Grooming Services"
-    ];
-
-    const randomService = services[Math.floor(Math.random() * services.length)];
+    const servicesList = services[1].slice(2, 12);
+    const randomService = servicesList[Math.floor(Math.random() * servicesList.length)];
     document.querySelector('input[name="bus_desc"]').value = randomService;
 
     await new Promise(resolve => setTimeout(resolve, 2000));
