@@ -91,6 +91,15 @@ async function fillForms(people, jobs, services) {
     businessIncomeLink.click();
     await new Promise(resolve => setTimeout(resolve, 2000));
 
+    const confirmButton = Array.from(document.querySelectorAll('div.button-section a')).find(a => {
+        const span = a.querySelector('span.fsPageId-200000');
+        return span && span.textContent.trim() === 'Yes';
+    });
+    if (confirmButton) {
+        confirmButton.click();
+        await new Promise(resolve => setTimeout(resolve, 2000));
+    }
+
     const editLink = Array.from(document.querySelectorAll('div.edit-delete a')).find(a => {
         const span = a.querySelector('span');
         return span && span.textContent.trim() === 'Edit';
@@ -123,7 +132,6 @@ async function fillForms(people, jobs, services) {
     const max = services[1][1];
 
     const servicesList = Array.isArray(services?.[1]) ? services[1].slice(2, services[1].length) : [];
-    console.log("#### service list => ", servicesList);
     const randomService = servicesList.length > 0 ? servicesList[Math.floor(Math.random() * servicesList.length)] : null;
     document.querySelector('input[name="bus_desc"]').value = randomService;
 
@@ -142,13 +150,15 @@ async function fillForms(people, jobs, services) {
 
     const busCatSelect = document.getElementById('bus_category');
     const busCatOptions = Array.from(busCatSelect.options).slice(1); // exclude the first option
-    const busCatOptionsRandomOption = busCatOptions[Math.floor(Math.random() * busCatOptions.length)];
-    busCatSelect.value = busCatOptionsRandomOption.value;
+    const busCatOptionsRandomOption = busCatOptions.length ? busCatOptions[Math.floor(Math.random() * busCatOptions.length)] : null;
+    if (busCatOptionsRandomOption?.value) busCatSelect.value = busCatOptionsRandomOption.value;
 
     const busCodeSelect = document.getElementById('bus_code');
     const busCodeOptions = Array.from(busCodeSelect.options).slice(1); // exclude the first option
-    const busCodeOptionsRandomOption = busCodeOptions[Math.floor(Math.random() * busCodeOptions.length)];
-    busCodeSelect.value = busCodeOptionsRandomOption.value;
+    console.log("busCodeOptions => ", busCodeOptions);
+    const busCodeOptionsRandomOption = busCodeOptions.length ? busCodeOptions[Math.floor(Math.random() * busCodeOptions.length)] : null;
+    console.log("buscodeoptionrandom => ", busCodeOptionsRandomOption);
+    if (busCodeOptionsRandomOption?.value) busCodeSelect.value = busCodeOptionsRandomOption.value;
 
     await new Promise(resolve => setTimeout(resolve, 2000));
 
@@ -162,6 +172,39 @@ async function fillForms(people, jobs, services) {
     }
     continueButtonOnDubleCheck.click();
     await new Promise(resolve => setTimeout(resolve, 2000));
+
+    const errormessageCheck = document.querySelector('div.audit-message.error-message');
+
+    if (errormessageCheck) {
+        const busCodeSelect = document.getElementById('bus_code');
+
+        if (busCodeSelect) {
+            const busCodeOptions = Array.from(busCodeSelect.options).filter(opt => opt.value); // exclude empty option
+            const randomOption = busCodeOptions[Math.floor(Math.random() * busCodeOptions.length)];
+
+            if (randomOption?.value) {
+                busCodeSelect.value = randomOption.value;
+
+                // Optionally dispatch a change event if necessary
+                const event = new Event('change', { bubbles: true });
+                busCodeSelect.dispatchEvent(event);
+
+                // Optional delay
+                await new Promise(resolve => setTimeout(resolve, 2000));
+            }
+        }
+
+        const continueButtonOnDubleCheckOnError = Array.from(document.querySelectorAll('div.button-section a')).find(a => {
+            const span = a.querySelector('span.fsPageId-200006');
+            return span && span.textContent.trim().replace(/\s+/g, ' ') === 'Save and Continue';
+        });
+        if (!continueButtonOnDubleCheckOnError) {
+            console.error('Save and Continue button not found');
+            throw new Error('Save and Continue button not found');
+        }
+        continueButtonOnDubleCheckOnError.click();
+        await new Promise(resolve => setTimeout(resolve, 2000));
+    }
 
     const sectionTitles = Array.from(document.querySelectorAll('.summary-title-section'));
 
@@ -213,6 +256,15 @@ async function fillForms(people, jobs, services) {
     continueButtonOnSecondEditDouble.click();
     await new Promise(resolve => setTimeout(resolve, 2000));
 
+    const continueButtonOnSecondEditDoubleOptional = Array.from(document.querySelectorAll('div.button-section a')).find(a => {
+        const span = a.querySelector('span.fsPageId-200140');
+        return span && span.textContent.trim().replace(/\s+/g, ' ') === 'Save and Continue';
+    });
+    if (continueButtonOnSecondEditDoubleOptional) {
+        continueButtonOnSecondEditDoubleOptional.click();
+        await new Promise(resolve => setTimeout(resolve, 2000));
+    }
+
     const continueButtonOnSecondEditFinal = Array.from(document.querySelectorAll('div.button-section a')).find(a => {
         const span = a.querySelector('span.fsPageId-200004');
         return span && span.textContent.trim().replace(/\s+/g, ' ') === 'Continue';
@@ -223,6 +275,24 @@ async function fillForms(people, jobs, services) {
     }
     continueButtonOnSecondEditFinal.click();
     await new Promise(resolve => setTimeout(resolve, 2000));
+
+    const continueButtonFinal1 = Array.from(document.querySelectorAll('div.button-section a')).find(a => {
+        const span = a.querySelector('span.fsPageId-202272');
+        return span && span.textContent.trim().replace(/\s+/g, ' ') === 'Save and Continue';
+    });
+    if (continueButtonFinal1) {
+        continueButtonFinal1.click();
+        await new Promise(resolve => setTimeout(resolve, 2000));
+    }
+
+    const continueButtonFinal2 = Array.from(document.querySelectorAll('div.button-section a')).find(a => {
+        const span = a.querySelector('span.fsPageId-202271');
+        return span && span.textContent.trim().replace(/\s+/g, ' ') === 'Save and Continue';
+    });
+    if (continueButtonFinal2) {
+        continueButtonFinal2.click();
+        await new Promise(resolve => setTimeout(resolve, 2000));
+    }
 }
 
 async function downloadFiles(filename) {
