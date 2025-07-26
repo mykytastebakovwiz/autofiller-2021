@@ -91,21 +91,43 @@ async function fillForms(people, jobs, services) {
     businessIncomeLink.click();
     await new Promise(resolve => setTimeout(resolve, 2000));
 
+    const deleteButton = Array.from(document.querySelectorAll('div.edit-delete a')).find(a => {
+        const span = a.querySelector('span');
+        return span && span.textContent.trim() === 'Delete';
+    });
+
+    const deleteServices = async (btn) => {
+        btn.click();
+        await new Promise(resolve => setTimeout(resolve, 2000));
+
+        const deletConfirmButton = Array.from(document.querySelectorAll('div.button-section a')).find(a => {
+            const span = a.querySelector('span.fsPageId-200003');
+            return span && span.textContent.trim() === 'Yes, Delete';
+        });
+        if (deletConfirmButton) {
+            deletConfirmButton.click();
+            await new Promise(resolve => setTimeout(resolve, 2000));
+        }
+
+        const deleteBtn = Array.from(document.querySelectorAll('div.edit-delete a')).find(a => {
+            const span = a.querySelector('span');
+            return span && span.textContent.trim() === 'Delete';
+        });
+
+        if (deleteBtn) {
+            await deleteServices(deleteBtn);
+        }
+    }
+    if (deleteButton) {
+        await deleteServices(deleteButton);
+    }
+
     const confirmButton = Array.from(document.querySelectorAll('div.button-section a')).find(a => {
         const span = a.querySelector('span.fsPageId-200000');
         return span && span.textContent.trim() === 'Yes';
     });
     if (confirmButton) {
         confirmButton.click();
-        await new Promise(resolve => setTimeout(resolve, 2000));
-    }
-
-    const editLink = Array.from(document.querySelectorAll('div.edit-delete a')).find(a => {
-        const span = a.querySelector('span');
-        return span && span.textContent.trim() === 'Edit';
-    });
-    if (editLink) {
-        editLink.click();
         await new Promise(resolve => setTimeout(resolve, 2000));
     }
 
