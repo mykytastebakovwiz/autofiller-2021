@@ -150,8 +150,9 @@ async function fillForms(people, jobs, services) {
         console.error('Overview section not found');
     }
 
-    const min = services[1][0];
-    const max = services[1][1];
+    const min = parseInt(services[1][0]);
+    const max = parseInt(services[1][1]);
+    console.log("### min and max => ", min, '-', max);
 
     const servicesList = Array.isArray(services?.[1]) ? services[1].slice(2, services[1].length) : [];
     const randomService = servicesList.length > 0 ? servicesList[Math.floor(Math.random() * servicesList.length)] : null;
